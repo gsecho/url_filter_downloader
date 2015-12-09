@@ -50,16 +50,32 @@ window.onload = function() {
     length = isNaN(length) ? 1024*1024 : length;
 
     var save = document.getElementById('save_dir').value
+
+    if (save === ""){
+      save = "/MP3/";
+      document.getElementById('save_dir').value = save;
+    }
     if (!save.endsWith('/')){
       document.getElementById('save_dir').value = save  +'/'
+    }
+
+    var urls = document.getElementById('domain_urls').value;
+    if (urls ==""){
+      urls = "<all_urls>"
+      document.getElementById('domain_urls').value = urls;
+    }
+    var ext = document.getElementById('file_extends').value;
+    if (ext == ""){
+      ext =".*mp3";
+      document.getElementById('file_extends').value = ext;
     }
 
     var opt = {
       enable_me:document.getElementById('enable_me').checked,
       mini_content_length:length, 
-      save_dir: document.getElementById('save_dir').value,
-      file_extends:document.getElementById('file_extends').value,
-      domain_urls: document.getElementById('domain_urls').value
+      save_dir: save,
+      file_extends:ext,
+      domain_urls: urls
     }
     localStorage.setItem(plugin_key, JSON.stringify(opt));
 

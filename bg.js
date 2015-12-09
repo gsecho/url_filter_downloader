@@ -10,7 +10,7 @@ window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFile
 function download(opt, url){
     where='\tonCompleted'
     console.log(where, url)
-    if('done'===localStorage.getItem(url)){
+    if('done' === localStorage.getItem(url)){
         console.log('Has downloaded.',url)
         return 
     }
@@ -25,7 +25,7 @@ function download(opt, url){
         console.log(where, "start an donwload task of:", url)
         
         end = url.indexOf('?')
-        end = end ==-1 ? url.length : end
+        end = (end == -1) ? url.length : end
         var filename = url.substring(url.lastIndexOf('/')+1, end);
         var option = {
                 url: url,
@@ -35,8 +35,13 @@ function download(opt, url){
                 method:'GET'
             }
         // begin to donwload
-        chrome.downloads.download(option)
-        localStorage.setItem(url, 'done')
+        try{
+            chrome.downloads.download(option)
+            localStorage.setItem(url, 'done')
+        }catch(e){
+            console.log(url, option)
+        }
+
     })
 }
 
@@ -48,8 +53,7 @@ callbackFunc = function(opt){
             //console.log("file extensions not match", url)
             return;
         }
-        console.log("Finish URL:", url)
-        console.log(details)
+
         // TODO: used the responseHeader Content-Disposition: inline; filename="4ec4%2F6198%2F1a..." as filename
         var find_content_length_header = false
         for (var i = 0; i < details.responseHeaders.length; ++i) {
@@ -77,9 +81,6 @@ callbackFunc = function(opt){
 }
 // 只监听mp3文件
 // filter = {urls:["*://*/*.mp3"]} the URL patterns Format:https://developer.chrome.com/extensions/match_patterns
-// for testing debug
-//chrome.webRequest.onCompleted.addListener(callbackFunc(getOption()), {urls: ["<all_urls>"]}, ["responseHeaders"]);
-
 var global_callback_function = null;
 
 function init_donwloader(opt){
@@ -91,6 +92,7 @@ function init_donwloader(opt){
     }
 
     if(opt.enable_me) {
+        console.log("start the download-Listener:", opt)
         global_callback_function = callbackFunc(opt)
         chrome.webRequest.onCompleted.addListener(global_callback_function, 
             {urls: [opt.domain_urls]},
@@ -100,13 +102,13 @@ function init_donwloader(opt){
 }
 
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
-    console.log("background.js get command request:", request)
     var opt = request
     init_donwloader(opt)
 });
 
 var plugin_key ="chuantong.huang@gmail.com-donwloader"
 var opt = JSON.parse(localStorage.getItem(plugin_key));
-if(opt.enable_me) {
+
+if(opt != null && opt.enable_me) {
     init_donwloader(opt)
 }
